@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Home } from './pages/Home'
@@ -19,6 +19,8 @@ import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
 
 const App = () => {
+  const ADMIN_ONLY = import.meta.env.VITE_ADMIN_ONLY === 'true'
+
   return (
     <div className='min-h-screen'>
       <ToastContainer position="bottom-right" autoClose={3000} />
@@ -27,27 +29,32 @@ const App = () => {
         <Route path='/admin/login' element={<AdminLogin />} />
         <Route path='/admin/*' element={<AdminDashboard />} />
 
-        {/* Main App Routes - with Navbar + Footer */}
-        <Route path='*' element={
-          <>
-            <Navbar />
-            <Routes>
-              <Route path='/' element={<Home />} />
-              <Route path='Packages' element={<Packages />} />
-              <Route path='Packages/:speciality' element={<Packages />} />
-              <Route path='login' element={<Login />} />
-              <Route path='about' element={<About />} />
-              <Route path='contact' element={<Contact />} />
-              <Route path='my-profile' element={<MyProfile />} />
-              <Route path='my-appointments' element={<MyAppointments />} />
-              <Route path='book/:testId' element={<PackageDetails />} />
-              <Route path='cart' element={<Cart />} />
-              <Route path='appointment' element={<Appointment />} />
-              <Route path='booking-success' element={<BookingSuccess />} />
-            </Routes>
-            <Footer />
-          </>
-        } />
+        {ADMIN_ONLY ? (
+          // Admin-only deployment: redirect any non-admin route to dashboard.
+          <Route path='*' element={<Navigate to='/admin/dashboard' replace />} />
+        ) : (
+          // Main App Routes - with Navbar + Footer
+          <Route path='*' element={
+            <>
+              <Navbar />
+              <Routes>
+                <Route path='/' element={<Home />} />
+                <Route path='Packages' element={<Packages />} />
+                <Route path='Packages/:speciality' element={<Packages />} />
+                <Route path='login' element={<Login />} />
+                <Route path='about' element={<About />} />
+                <Route path='contact' element={<Contact />} />
+                <Route path='my-profile' element={<MyProfile />} />
+                <Route path='my-appointments' element={<MyAppointments />} />
+                <Route path='book/:testId' element={<PackageDetails />} />
+                <Route path='cart' element={<Cart />} />
+                <Route path='appointment' element={<Appointment />} />
+                <Route path='booking-success' element={<BookingSuccess />} />
+              </Routes>
+              <Footer />
+            </>
+          } />
+        )}
       </Routes>
     </div>
   )
