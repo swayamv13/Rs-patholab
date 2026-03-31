@@ -23,8 +23,8 @@ const updateProfile = async (req, res) => {
     try {
         const { userId, name, phone, address, gender, dob } = req.body;
 
-        if (!name || !phone || !gender || !dob) {
-            return res.json({ success: false, message: 'Data Missing' });
+        if (!name) {
+            return res.json({ success: false, message: 'Name is required' });
         }
 
         await userModel.findByIdAndUpdate(userId, { name, phone, address, gender, dob });

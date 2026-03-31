@@ -6,7 +6,8 @@ import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
 import AdminCatalog from './AdminCatalog'
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
+const RAW_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
+const BACKEND_URL = RAW_BACKEND_URL.replace(/\/$/, '')
 
 // ============================================================
 // SIDEBAR
