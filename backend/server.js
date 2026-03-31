@@ -31,6 +31,10 @@ app.use('/api/payment', paymentRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/admin', adminRouter);
 
+app.get('/', (req, res) => {
+    res.send('RS Path Lab API Working ✅');
+});
+
 // Conditionally listen locally or in standard environments, but Vercel will handle it personally.
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     app.listen(port, () => {
