@@ -32,7 +32,7 @@ app.use('/api/catalog', catalogRouter);
 app.use('/api/admin', adminRouter);
 
 app.get('/', (req, res) => {
-    res.send('RS Path Lab API Working ✅');
+    res.send('RS Path Lab API Working ✅ (v1.1 - Fixed Profile/Admin)');
 });
 
 // Conditionally listen locally or in standard environments, but Vercel will handle it personally.
