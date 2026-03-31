@@ -25,7 +25,8 @@ const AppContextProvider = (props) => {
     const [familyMembers, setFamilyMembers] = useState([]);
     const [healthPackages, setHealthPackages] = useState(fallbackHealthPackages);
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const rawBackendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = rawBackendUrl.replace(/\/$/, '');
 
     useEffect(() => {
         const loadCatalog = async () => {
