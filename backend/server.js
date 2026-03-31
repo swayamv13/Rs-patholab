@@ -21,8 +21,7 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 
-// Serve uploaded report files
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Local static uploads removed in favor of Firebase Storage
 
 // API Endpoints
 app.use('/api/auth', authRouter);

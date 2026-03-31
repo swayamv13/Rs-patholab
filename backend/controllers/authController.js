@@ -4,43 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import userModel from '../models/User.js';
-import admin from 'firebase-admin';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const getFirebaseAdmin = () => {
-    if (admin.apps.length) return admin;
-
-    let serviceAccount = null;
-
-    const rawEnv = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    if (rawEnv) {
-        try {
-            serviceAccount = JSON.parse(rawEnv);
-        } catch {
-            return null;
-        }
-    } else {
-        const filePath =
-            process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-            path.join(__dirname, '..', 'firebase-service-account.json');
-        if (fs.existsSync(filePath)) {
-            try {
-                serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-            } catch {
-                return null;
-            }
-        }
-    }
-
-    if (!serviceAccount) return null;
-
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-    return admin;
-};
+import { getFirebaseAdmin } from '../config/firebaseAdmin.js';
 
 const createJwt = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET);
 

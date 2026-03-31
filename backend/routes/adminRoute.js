@@ -4,6 +4,7 @@ import HomeVisit from '../models/HomeVisit.js';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { getFirebaseAdmin } from '../config/firebaseAdmin.js';
 import {
     adminListTests,
     adminCreateTest,
@@ -11,10 +12,6 @@ import {
     adminDeleteTest,
     adminSeedDefaults
 } from '../controllers/catalogController.js';
-
-// Use backend working directory to avoid Windows path quirks with fileURLToPath.
-const REPORTS_DIR = path.join(process.cwd(), 'uploads', 'reports');
-fs.mkdirSync(REPORTS_DIR, { recursive: true });
 
 const adminRouter = express.Router();
 
@@ -85,16 +82,7 @@ adminRouter.post('/set-report-url', adminAuth, async (req, res) => {
 
 // Upload report file (PDF/JPG/PNG/etc) and save as appointment.reportUrl
 adminRouter.post('/upload-report', adminAuth, multer({
-    storage: multer.diskStorage({
-        destination: (_req, _file, cb) => cb(null, REPORTS_DIR),
-        filename: (req, file, cb) => {
-            const appointmentId = req.body?.appointmentId ? String(req.body.appointmentId) : 'unknown';
-            const ext = path.extname(file.originalname || '').toLowerCase() || `.${file.mimetype.split('/')[1] || 'dat'}`;
-            const safeExt = ext.replace(/[^a-z0-9.]/gi, '');
-            const name = `report_${appointmentId}_${Date.now()}${safeExt}`;
-            cb(null, name);
-        }
-    }),
+    storage: multer.memoryStorage(),
     limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
     fileFilter: (_req, file, cb) => {
         const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
@@ -120,12 +108,34 @@ adminRouter.post('/upload-report', adminAuth, multer({
             return res.json({ success: false, message: 'reportFile missing' });
         }
 
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const reportUrl = `/uploads/reports/${req.file.filename}`;
+        const firebaseAdmin = getFirebaseAdmin();
+        if (!firebaseAdmin) {
+            return res.json({ success: false, message: 'Firebase Storage is not configured on the server.' });
+        }
+
+        // Prepare file name
+        const ext = path.extname(req.file.originalname || '').toLowerCase() || `.${req.file.mimetype.split('/')[1] || 'dat'}`;
+        const safeExt = ext.replace(/[^a-z0-9.]/gi, '');
+        const filename = `reports/report_${appointmentId}_${Date.now()}${safeExt}`;
+        
+        // Upload to Firebase Storage
+        const bucket = firebaseAdmin.storage().bucket();
+        const file = bucket.file(filename);
+
+        await file.save(req.file.buffer, {
+            metadata: { contentType: req.file.mimetype },
+            public: true // Automatically sets object to be publicly readable
+        });
+
+        // Construct public URL
+        const encodedFilename = encodeURIComponent(filename);
+        const reportUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedFilename}?alt=media`;
+
         await appointmentModel.findByIdAndUpdate(appointmentId, { reportUrl }, { new: true });
 
-        res.json({ success: true, message: 'Report uploaded successfully.', reportUrl: `${baseUrl}${reportUrl}` });
+        res.json({ success: true, message: 'Report uploaded successfully.', reportUrl });
     } catch (error) {
+        console.error('Upload Error: ', error);
         res.json({ success: false, message: error.message || 'Upload failed' });
     }
 });
