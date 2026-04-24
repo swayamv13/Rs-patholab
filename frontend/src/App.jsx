@@ -17,12 +17,15 @@ import Cart from './pages/Cart'
 import Footer from './components/Footer'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import Chatbot from './components/Chatbot'
+import PWAInstallPrompt from './components/PWAInstallPrompt'
 
 const App = () => {
   const ADMIN_ONLY = import.meta.env.VITE_ADMIN_ONLY === 'true'
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen relative'>
+      <PWAInstallPrompt />
       <ToastContainer position="bottom-right" autoClose={3000} />
       <Routes>
         {/* Admin Routes - no Navbar/Footer */}
@@ -52,6 +55,7 @@ const App = () => {
                 <Route path='booking-success' element={<BookingSuccess />} />
               </Routes>
               <Footer />
+              <Chatbot />
             </>
           } />
         )}

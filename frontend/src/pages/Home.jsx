@@ -102,13 +102,7 @@ export const Home = () => {
       });
 
       if (data.success) {
-        if (sendWhatsapp) {
-          const message = encodeURIComponent(
-            `New Home Visit Request\n\nName: ${name}\nPhone: ${phone}\nArea: ${city}\nTime: ${new Date().toLocaleString('en-IN')}`
-          )
-          const whatsappUrl = `https://wa.me/918210236683?text=${message}`
-          window.open(whatsappUrl, '_blank')
-        }
+
   
         toast.success(data.message || "Request sent successfully! Our team will call you shortly.");
         form.reset(); 
@@ -371,21 +365,14 @@ export const Home = () => {
                       <input id="agree" type="checkbox" className='w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500' required defaultChecked />
                     </div>
                     <label htmlFor="agree" className='text-xs text-gray-500 leading-snug'>
-                      I authorize RS Path Lab to contact me via Call/SMS/WhatsApp. <span className='text-blue-600 font-bold'>T&C Apply.</span>
+                      I authorize RS Path Lab to contact me via Call/SMS. <span className='text-blue-600 font-bold'>T&C Apply.</span>
                     </label>
                   </div>
 
-                  <div className='flex items-start gap-3'>
-                    <div className='flex items-center h-5'>
-                      <input id="sendWhatsapp" name="sendWhatsapp" type="checkbox" className='w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500' defaultChecked />
-                    </div>
-                    <label htmlFor="sendWhatsapp" className='text-xs text-gray-500 leading-snug'>
-                      Send details instantly on WhatsApp (recommended)
-                    </label>
-                  </div>
+
 
                   <button type="submit" className='w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95 text-lg tracking-wide'>
-                    Get a Call Back / WhatsApp
+                    Get a Call Back
                   </button>
                 </form>
               </div>
@@ -441,18 +428,7 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* FLOATING ACTION BUTTONS */}
-      <div className='fixed bottom-8 right-8 z-40 flex flex-col gap-4'>
-        {/* Call Button */}
-        <a href="tel:919508383139" className='bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform animate-bounce-slow delay-100'>
-          <span className='text-2xl'>📞</span>
-        </a>
 
-        {/* WhatsApp Button */}
-        <a href="https://wa.me/919508383139" target="_blank" rel="noreferrer" className='bg-green-500 text-white p-4 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform animate-bounce-slow'>
-          <span className='text-3xl'>💬</span> {/* or real icon */}
-        </a>
-      </div>
 
     </div>
   )

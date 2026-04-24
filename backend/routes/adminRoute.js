@@ -1,10 +1,29 @@
 import express from 'express';
 import appointmentModel from '../models/Appointment.js';
 import HomeVisit from '../models/HomeVisit.js';
+import chatbotLeadModel from '../models/ChatbotLead.js';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { getFirebaseAdmin } from '../config/firebaseAdmin.js';
+import cloudinary from '../config/cloudinary.js';
+
+// Helper: is Cloudinary configured?
+const hasCloudinary = () =>
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET;
+
+// Upload buffer to Cloudinary and return secure URL
+const uploadBufferToCloudinary = (buffer, mimetype) =>
+    new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: 'rs-pathlab-reports', resource_type: 'auto' },
+            (err, result) => err ? reject(err) : resolve(result.secure_url)
+        );
+        stream.end(buffer);
+    });
 import {
     adminListTests,
     adminCreateTest,
@@ -25,11 +44,36 @@ const adminAuth = (req, res, next) => {
     }
 };
 
-// Get all appointments
+// Get appointments — with pagination, search and filter support
 adminRouter.get('/appointments', adminAuth, async (req, res) => {
     try {
-        const appointments = await appointmentModel.find({}).sort({ createdAt: -1 });
-        res.json({ success: true, appointments });
+        const page    = Math.max(1, parseInt(req.query.page)  || 1);
+        const limit   = Math.max(1, parseInt(req.query.limit) || 15);
+        const search  = (req.query.search  || '').trim();
+        const filter  = (req.query.filter  || 'all').trim();
+
+        // Build a base match
+        let match = {};
+        if (filter === 'paid')      match.payment = true;
+        if (filter === 'pending')   match = { ...match, payment: false, status: { $ne: 'Cancelled' } };
+        if (filter === 'cancelled') match.status = 'Cancelled';
+
+        // Text search across patient name, phone
+        if (search) {
+            match.$or = [
+                { 'address.name':  { $regex: search, $options: 'i' } },
+                { 'address.phone': { $regex: search, $options: 'i' } },
+            ];
+        }
+
+        const total = await appointmentModel.countDocuments(match);
+        const appointments = await appointmentModel
+            .find(match)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.json({ success: true, appointments, total, page, totalPages: Math.ceil(total / limit) });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -40,6 +84,16 @@ adminRouter.get('/visits', adminAuth, async (req, res) => {
     try {
         const visits = await HomeVisit.find({}).sort({ createdAt: -1 });
         res.json({ success: true, visits });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// Get all chatbot leads
+adminRouter.get('/chatbot-leads', adminAuth, async (req, res) => {
+    try {
+        const leads = await chatbotLeadModel.find({}).sort({ createdAt: -1 });
+        res.json({ success: true, leads });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -83,7 +137,7 @@ adminRouter.post('/set-report-url', adminAuth, async (req, res) => {
 // Upload report file (PDF/JPG/PNG/etc) and save as appointment.reportUrl
 adminRouter.post('/upload-report', adminAuth, multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB to avoid MongoDB BsonSizeError
     fileFilter: (_req, file, cb) => {
         const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
         if (!allowed.includes(file.mimetype)) {
@@ -108,32 +162,21 @@ adminRouter.post('/upload-report', adminAuth, multer({
             return res.json({ success: false, message: 'reportFile missing' });
         }
 
-        const firebaseAdmin = getFirebaseAdmin();
-        if (!firebaseAdmin) {
-            return res.json({ success: false, message: 'Firebase Storage is not configured on the server.' });
+        let reportUrl;
+        if (hasCloudinary()) {
+            // ✅ Cloudinary — store as persistent public URL
+            reportUrl = await uploadBufferToCloudinary(req.file.buffer, req.file.mimetype);
+        } else {
+            // ⚠️  Fallback — Base64 in MongoDB (add CLOUDINARY_* env vars to switch)
+            const base64Data = req.file.buffer.toString('base64');
+            reportUrl = `data:${req.file.mimetype};base64,${base64Data}`;
+            console.warn('[upload-report] Cloudinary not configured — using Base64 fallback. Large files may hit MongoDB size limits.');
         }
-
-        // Prepare file name
-        const ext = path.extname(req.file.originalname || '').toLowerCase() || `.${req.file.mimetype.split('/')[1] || 'dat'}`;
-        const safeExt = ext.replace(/[^a-z0-9.]/gi, '');
-        const filename = `reports/report_${appointmentId}_${Date.now()}${safeExt}`;
-        
-        // Upload to Firebase Storage
-        const bucket = firebaseAdmin.storage().bucket();
-        const file = bucket.file(filename);
-
-        await file.save(req.file.buffer, {
-            metadata: { contentType: req.file.mimetype },
-            public: true // Automatically sets object to be publicly readable
-        });
-
-        // Construct public URL
-        const encodedFilename = encodeURIComponent(filename);
-        const reportUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedFilename}?alt=media`;
 
         await appointmentModel.findByIdAndUpdate(appointmentId, { reportUrl }, { new: true });
 
-        res.json({ success: true, message: 'Report uploaded successfully.', reportUrl });
+        const storageBackend = hasCloudinary() ? 'Cloudinary' : 'MongoDB (Base64)';
+        res.json({ success: true, message: `Report uploaded via ${storageBackend}.`, reportUrl });
     } catch (error) {
         console.error('Upload Error: ', error);
         res.json({ success: false, message: error.message || 'Upload failed' });
@@ -153,6 +196,85 @@ adminRouter.post('/cancel-appointment', adminAuth, async (req, res) => {
         const { appointmentId } = req.body;
         await appointmentModel.findByIdAndUpdate(appointmentId, { status: 'Cancelled' });
         res.json({ success: true, message: 'Appointment cancelled.' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ----------------------------------------------------------------
+// Dashboard stats — all-time numbers for charts (no pagination)
+// ----------------------------------------------------------------
+adminRouter.get('/stats', adminAuth, async (req, res) => {
+    try {
+        const all = await appointmentModel.find({}, 'amount payment status createdAt items date').lean();
+
+        const totalRevenue = all.filter(a => a.payment).reduce((s, a) => s + (a.amount || 0), 0);
+        const paid         = all.filter(a => a.payment).length;
+        const pending      = all.filter(a => !a.payment && a.status !== 'Cancelled').length;
+        const cancelled    = all.filter(a => a.status === 'Cancelled').length;
+
+        // Last-7-days per-day breakdown
+        const last7 = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            d.setHours(0, 0, 0, 0);
+            return d;
+        });
+        const daily = last7.map(d => {
+            const next = new Date(d); next.setDate(d.getDate() + 1);
+            const dayAppts = all.filter(a => {
+                const c = new Date(a.createdAt);
+                return c >= d && c < next;
+            });
+            return {
+                label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                revenue: dayAppts.filter(a => a.payment).reduce((s, a) => s + (a.amount || 0), 0),
+                bookings: dayAppts.length
+            };
+        });
+
+        // Top-5 tests by booking count
+        const testCount = {};
+        all.forEach(a => (a.items || []).forEach(i => {
+            testCount[i.name] = (testCount[i.name] || 0) + 1;
+        }));
+        const topTests = Object.entries(testCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, value]) => ({ name, value }));
+
+        res.json({ success: true, total: all.length, totalRevenue, paid, pending, cancelled, daily, topTests });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+// ----------------------------------------------------------------
+// Staff accounts — lightweight RBAC
+// STAFF_ACCOUNTS env var format: "user:pass:role,user2:pass2:role2"
+// Roles: superadmin | receptionist | technician
+// ----------------------------------------------------------------
+adminRouter.post('/staff-login', async (req, res) => {
+    try {
+        const { username, password } = req.body || {};
+        if (!username || !password) return res.json({ success: false, message: 'Credentials required.' });
+
+        // Hardcoded superadmin token (backward-compat)
+        if (username === 'admin' && password === 'rs_admin_authenticated') {
+            return res.json({ success: true, token: 'rs_admin_authenticated', role: 'superadmin', name: 'Admin' });
+        }
+
+        // Parse staff accounts from env
+        const raw = process.env.STAFF_ACCOUNTS || '';
+        const staff = raw.split(',').map(s => {
+            const [u, p, r] = s.split(':');
+            return { username: u, password: p, role: r || 'receptionist' };
+        }).filter(s => s.username && s.password);
+
+        const match = staff.find(s => s.username === username && s.password === password);
+        if (!match) return res.json({ success: false, message: 'Invalid credentials.' });
+
+        res.json({ success: true, token: 'rs_admin_authenticated', role: match.role, name: match.username });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

@@ -38,7 +38,7 @@ const MyAppointments = () => {
       }
     } catch (error) {
       // Fallback — direct call to lab
-      toast.info('Please call +91 95083 83139 to cancel your appointment.')
+      toast.info('Please call +91 82102 36683 to cancel your appointment.')
     }
   }
 
@@ -99,7 +99,7 @@ const MyAppointments = () => {
                 if (!r) return null
                 const s = String(r)
                 // If backend stores a relative URL like `/uploads/...`, prefix with backend origin.
-                if (s.startsWith('http://') || s.startsWith('https://')) return s
+                if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')) return s
                 if (s.startsWith('/')) return backendUrl + s
                 return `${backendUrl}/${s}`
               })()
@@ -117,7 +117,7 @@ const MyAppointments = () => {
                   <div className='p-6 flex flex-col md:flex-row gap-4 justify-between'>
                     <div className='flex-1'>
                       <h3 className='font-bold text-lg text-gray-800 mb-3'>
-                        {app.items?.map(i => i.name).join(', ')}
+                        {(app.items || []).map(i => i.name).join(', ')}
                       </h3>
                       <div className='grid grid-cols-2 gap-y-2 text-sm text-gray-600'>
                         <div className='flex items-center gap-2'>📅 <span>{new Date(app.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</span></div>
@@ -135,27 +135,23 @@ const MyAppointments = () => {
 
                     {/* Action Buttons */}
                     <div className='flex flex-col gap-2 min-w-[160px]'>
-                      {app.payment && (
-                        app.reportUrl
-                          ? (
-                            <a
-                              href={reportHref}
-                              target='_blank'
-                              rel='noreferrer'
-                              className='w-full bg-blue-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-blue-800 transition-all flex items-center justify-center'
-                            >
-                              📄 Download Report
-                            </a>
-                          )
-                          : (
-                            <button
-                              type='button'
-                              disabled
-                              className='w-full bg-gray-100 text-gray-400 text-sm font-bold py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center'
-                            >
-                              📄 Report will be available soon
-                            </button>
-                          )
+                      {app.reportUrl ? (
+                         <a
+                           href={reportHref}
+                           target='_blank'
+                           rel='noreferrer'
+                           className='w-full bg-blue-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-blue-800 transition-all flex items-center justify-center'
+                         >
+                           📄 Download Report
+                         </a>
+                      ) : (
+                         <button
+                           type='button'
+                           disabled
+                           className='w-full bg-gray-100 text-gray-400 text-sm font-bold py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center'
+                         >
+                           📄 Report will be available soon
+                         </button>
                       )}
                       {app.status !== 'Cancelled' && (
                         <button
@@ -166,7 +162,7 @@ const MyAppointments = () => {
                         </button>
                       )}
                       <a
-                        href='tel:919508383139'
+                        href='tel:918210236683'
                         className='w-full border-2 border-gray-200 text-gray-600 text-sm font-bold py-2.5 rounded-xl hover:bg-gray-50 transition-all text-center'
                       >
                         📞 Call Us
@@ -197,13 +193,10 @@ const MyAppointments = () => {
         <div className='mt-8 bg-blue-50 rounded-xl p-5 text-center border border-blue-100'>
           <p className='text-blue-800 font-semibold text-sm'>
             Need help with your appointment?{' '}
-            <a href='tel:919508383139' className='text-blue-600 font-bold hover:underline'>
-              📞 Call +91 95083 83139
+            <a href='tel:918210236683' className='text-blue-600 font-bold hover:underline'>
+              📞 Call +91 82102 36683
             </a>
-            {' '}or{' '}
-            <a href='https://wa.me/919508383139' target='_blank' rel='noreferrer' className='text-green-600 font-bold hover:underline'>
-              💬 WhatsApp Us
-            </a>
+            {' '}or use the Chatbot for help.
           </p>
         </div>
       </div>

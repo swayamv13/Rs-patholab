@@ -35,7 +35,7 @@ export const getFirebaseAdmin = () => {
 
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'rs-pathlab.firebasestorage.app'
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'rs-pathlab.appspot.com'
     });
     return admin;
 };

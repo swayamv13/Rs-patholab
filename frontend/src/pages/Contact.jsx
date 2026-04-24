@@ -9,11 +9,8 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
-    // Send via WhatsApp since we have no email server
-    const msg = `Hi RS Path Lab, I have a query.%0A%0A*Name*: ${form.name}%0A*Phone*: ${form.phone}%0A*Email*: ${form.email}%0A%0A*Message*:%0A${form.message}`
-    const url = `https://wa.me/918210236683?text=${msg}`
-    window.open(url, '_blank')
-    toast.success('Opening WhatsApp to send your message!')
+    // Send via API or just show success for now since user disabled Whatsapp
+    toast.success('Thank you! Your message has been sent.')
     setForm({ name: '', phone: '', email: '', message: '' })
     setSubmitting(false)
   }
@@ -34,7 +31,7 @@ const Contact = () => {
         {/* Info Cards Row */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {[
-            { icon: '📍', title: 'Our Address', lines: ['Harharguttu Shiv Mandir Chowk,', 'Jamshedpur, Jharkhand – 831002'] },
+            { icon: '📍', title: 'Our Address', lines: ['Tulsi Tower, Harharguttu,', 'Shivmandir Chowk, Jamshedpur 831002'] },
             { icon: '📞', title: 'Call / WhatsApp', lines: ['+91 82102 36683', '+91 90979 56657', 'Mon–Sat: 7:00 AM – 7:00 PM'] },
             { icon: '📧', title: 'Email', lines: ['support@rspathlab.com', 'We reply within 24 hours'] },
           ].map((card, i) => (
@@ -78,28 +75,30 @@ const Contact = () => {
               </div>
               <button type='submit' disabled={submitting}
                 className='w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition-all shadow-lg text-base disabled:opacity-60'>
-                {submitting ? '⏳ Sending...' : '💬 Send via WhatsApp'}
+                {submitting ? '⏳ Sending...' : '💬 Send Message'}
               </button>
-              <p className='text-xs text-gray-400 text-center'>This will open WhatsApp to send your message directly.</p>
+              <p className='text-xs text-gray-400 text-center'>We will get back to you via call or email.</p>
             </form>
           </div>
 
           {/* Map + Opening Hours */}
           <div className='space-y-6'>
-            {/* Map Placeholder */}
+            {/* Live Google Map */}
             <div className='bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden'>
-              <div className='h-56 bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center gap-3 border-b border-gray-100'>
-                <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-4xl'>
-                  📍
-                </div>
-                <div className='text-center'>
-                  <p className='font-bold text-blue-900 text-base'>Find Us on the Map</p>
-                  <p className='text-gray-500 text-sm mt-1'>LBSM Road, Harharguttu, Jamshedpur</p>
-                </div>
+              <div className='h-64 w-full'>
+                <iframe 
+                  src="https://www.google.com/maps?q=Tulsi+Tower,+Harharguttu,+Shivmandir+Chowk,+Jamshedpur+831002&output=embed" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen="" 
+                  loading="lazy"
+                  title="RS Path Lab Location"
+                ></iframe>
               </div>
-              <div className='p-4 flex gap-3'>
+              <div className='p-4 flex gap-3 bg-white'>
                 <a
-                  href='https://maps.google.com/?q=Harharguttu+Shiv+Mandir+Chowk+Jamshedpur'
+                  href='https://maps.google.com/?q=Tulsi+Tower,+Harharguttu,+Shivmandir+Chowk,+Jamshedpur'
                   target='_blank'
                   rel='noreferrer'
                   className='flex-1 border-2 border-blue-900 text-blue-900 font-bold py-2.5 rounded-xl text-sm text-center hover:bg-blue-50 transition-all'

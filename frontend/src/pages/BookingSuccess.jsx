@@ -91,7 +91,7 @@ const BookingSuccess = () => {
         {/* Help */}
         <p className='text-xs text-gray-400 mt-6'>
           Need help? Call us at{' '}
-          <a href='tel:919508383139' className='text-blue-600 font-bold hover:underline'>+91 95083 83139</a>
+          <a href='tel:918210236683' className='text-blue-600 font-bold hover:underline'>+91 82102 36683</a>
         </p>
       </div>
     </div>

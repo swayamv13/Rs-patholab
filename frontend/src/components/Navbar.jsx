@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
 import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
+import AIPrescriptionModal from './AIPrescriptionModal'
 
 const Navbar = () => {
     const navigate = useNavigate()
@@ -11,6 +12,7 @@ const Navbar = () => {
 
     const { token, setToken, logout } = useContext(AppContext)
     const [showMenu, setShowMenu] = useState(false)
+    const [showAIModal, setShowAIModal] = useState(false)
 
 
     return (
@@ -59,7 +61,7 @@ const Navbar = () => {
 
                     {/* NEW: Prominent Action Buttons */}
                     <div className='hidden lg:flex items-center gap-3 mr-2'>
-                        <button className='flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg hover:shadow-blue-200 hover:scale-105 transition-all animate-pulse-slow'>
+                        <button onClick={() => setShowAIModal(true)} className='flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg hover:shadow-blue-200 hover:scale-105 transition-all animate-pulse-slow'>
                             <span>📤</span> Upload Prescription
                         </button>
                     </div>
@@ -86,8 +88,8 @@ const Navbar = () => {
                                 {/* Dropdown */}
                                 <div className='absolute top-full right-0 mt-2 min-w-48 bg-white rounded-xl shadow-xl border border-gray-100 text-gray-600 z-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right translate-y-2 group-hover:translate-y-0'>
                                     <div className='flex flex-col p-2'>
-                                        <p onClick={() => navigate('my-profile')} className='px-4 py-2 hover:bg-blue-50 hover:text-primary rounded-lg cursor-pointer transition-colors'>My Profile</p>
-                                        <p onClick={() => navigate('my-appointments')} className='px-4 py-2 hover:bg-blue-50 hover:text-primary rounded-lg cursor-pointer transition-colors'>My Appointments</p>
+                                        <p onClick={() => navigate('/my-profile')} className='px-4 py-2 hover:bg-blue-50 hover:text-primary rounded-lg cursor-pointer transition-colors'>My Profile</p>
+                                        <p onClick={() => navigate('/my-appointments')} className='px-4 py-2 hover:bg-blue-50 hover:text-primary rounded-lg cursor-pointer transition-colors'>My Appointments</p>
                                         <hr className='my-1 border-gray-100' />
                                         <p onClick={logout} className='px-4 py-2 hover:bg-red-50 hover:text-red-500 rounded-lg cursor-pointer transition-colors'>Logout</p>
                                     </div>
@@ -118,7 +120,7 @@ const Navbar = () => {
 
                         {/* Mobile Actions */}
                         <div className='grid grid-cols-2 gap-3 mb-4'>
-                            <button className='flex items-center justify-center gap-2 px-2 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all'>
+                            <button onClick={() => {setShowAIModal(true); setShowMenu(false)}} className='flex items-center justify-center gap-2 px-2 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all'>
                                 <span>📤</span> Upload
                             </button>
                         </div>
@@ -146,6 +148,8 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
+
+            <AIPrescriptionModal isOpen={showAIModal} onClose={() => setShowAIModal(false)} />
         </div>
     )
 }

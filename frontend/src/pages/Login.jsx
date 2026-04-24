@@ -184,7 +184,7 @@ const Login = () => {
                 {state === 'Sign In' && (
                   <button
                     type='button'
-                    onClick={() => toast.info('Please contact us at +91 95083 83139 to reset your password.')}
+                    onClick={() => toast.info('Please contact us at +91 82102 36683 to reset your password.')}
                     className='text-xs text-blue-600 font-semibold hover:underline'
                   >
                     Forgot Password?
@@ -246,7 +246,7 @@ const Login = () => {
 
           <div className='mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100'>
             <p className='text-xs text-blue-800 text-center font-medium'>
-              📞 Need help? Call us at <a href='tel:919508383139' className='font-bold hover:underline'>+91 95083 83139</a>
+              📞 Need help? Call us at <a href='tel:918210236683' className='font-bold hover:underline'>+91 82102 36683</a>
             </p>
           </div>
         </div>

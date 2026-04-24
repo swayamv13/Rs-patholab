@@ -18,7 +18,11 @@ const userSchema = new mongoose.Schema({
         relation: { type: String },
         age: { type: String },
         gender: { type: String }
-    }]
+    }],
+    dailyUploads: {
+        date: { type: String, default: '' },
+        count: { type: Number, default: 0 }
+    }
 }, { minimize: false, timestamps: true });
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);

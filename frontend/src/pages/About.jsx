@@ -29,7 +29,7 @@ const About = () => {
             <div className='flex-1'>
               <h2 className='text-2xl font-bold text-gray-900 mb-4'>🏥 Who We Are</h2>
               <p className='text-gray-600 text-base leading-relaxed mb-4'>
-                RS Path Lab is a trusted diagnostic center located at Harharguttu Shiv Mandir Chowk, Jamshedpur, Jharkhand.
+                RS Path Lab is a trusted diagnostic center located at Tulsi Tower, Harharguttu, Shivmandir Chowk, Jamshedpur 831002.
                 We are committed to providing high-quality, reliable, and affordable pathology and imaging services to individuals and families across the city.
               </p>
               <p className='text-gray-600 text-base leading-relaxed'>
@@ -42,8 +42,9 @@ const About = () => {
               <p className='text-blue-900 text-lg font-bold'>RS Path Lab &amp; Digital X-Ray</p>
               <p className='text-blue-700 text-sm mt-1'>Diagnostic &amp; Imaging Centre</p>
               <hr className='my-4 border-blue-200' />
-              <p className='text-gray-600 text-sm font-medium'>Shiv Mandir Chowk, Harharguttu</p>
-              <p className='text-gray-600 text-sm'>Jamshedpur, 831002</p>
+              <p className='text-gray-600 text-sm font-medium'>Tulsi Tower, Harharguttu</p>
+              <p className='text-gray-600 text-sm font-medium'>Shivmandir Chowk</p>
+              <p className='text-gray-600 text-sm'>Jamshedpur 831002</p>
               <p className='text-gray-600 text-sm mt-2 font-bold text-blue-900'>📞 82102 36683</p>
               <p className='text-gray-600 text-sm font-bold text-blue-900'>📞 90979 56657</p>
             </div>
@@ -130,6 +131,22 @@ const About = () => {
                 <p className='text-gray-700 text-sm'>{point}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Live Map */}
+        <div className='bg-white rounded-2xl shadow-md border border-gray-100 p-8'>
+          <h2 className='text-2xl font-bold text-gray-900 mb-6'>📍 Visit Our Lab</h2>
+          <div className='w-full rounded-xl overflow-hidden shadow-sm border border-gray-200 h-96'>
+            <iframe 
+              src="https://www.google.com/maps?q=Tulsi+Tower,+Harharguttu,+Shivmandir+Chowk,+Jamshedpur+831002&output=embed" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }} 
+              allowFullScreen="" 
+              loading="lazy"
+              title="RS Path Lab Location"
+            ></iframe>
           </div>
         </div>
 

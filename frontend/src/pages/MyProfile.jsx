@@ -140,13 +140,13 @@ const MyProfile = () => {
                 <div className='space-y-2 pt-2'>
                   {isEdit ? (
                     <div className='space-y-2'>
-                      <input className='bg-gray-50 p-2 rounded border w-full' placeholder="Line 1" onChange={(e) => setLocalData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))} value={localData.address.line1} type="text" />
-                      <input className='bg-gray-50 p-2 rounded border w-full' placeholder="Line 2" onChange={(e) => setLocalData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))} value={localData.address.line2} type="text" />
+                      <input className='bg-gray-50 p-2 rounded border w-full' placeholder="Line 1" onChange={(e) => setLocalData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))} value={localData.address?.line1 || ''} type="text" />
+                      <input className='bg-gray-50 p-2 rounded border w-full' placeholder="Line 2" onChange={(e) => setLocalData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))} value={localData.address?.line2 || ''} type="text" />
                     </div>
                   ) : (
                     <p className='text-gray-600 font-medium'>
-                      {localData.address.line1 || 'Add Address'}<br />
-                      {localData.address.line2}
+                      {localData.address?.line1 || 'Add Address'}<br />
+                      {localData.address?.line2 || ''}
                     </p>
                   )}
                 </div>

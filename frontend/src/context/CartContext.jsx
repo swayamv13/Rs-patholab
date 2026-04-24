@@ -10,7 +10,14 @@ export const CartProvider = ({ children }) => {
     useEffect(() => {
         const checkLocal = localStorage.getItem('labCart');
         if (checkLocal) {
-            setCartItems(JSON.parse(checkLocal));
+            try {
+                const parsed = JSON.parse(checkLocal);
+                // Failsafe: Filter out any corrupted string items
+                const validItems = parsed.filter(item => typeof item === 'object' && item !== null && item.name);
+                setCartItems(validItems);
+            } catch (e) {
+                setCartItems([]);
+            }
         }
     }, []);
 
